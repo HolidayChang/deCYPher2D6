@@ -1,0 +1,8 @@
+##fileformat=VCFv4.1
+##contig=<ID=CYP2D6*1.001,length=11312>
+##INFO=<ID=QNAME,Number=1,Type=String,Description="Query name">
+##INFO=<ID=QSTART,Number=1,Type=Integer,Description="Query start">
+##INFO=<ID=QSTRAND,Number=1,Type=String,Description="Query strand">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+CYP2D6*1.001	5144	.	G	A	60	.	QNAME=CYP2D6*71;QSTART=5144;QSTRAND=+	GT	1/1
