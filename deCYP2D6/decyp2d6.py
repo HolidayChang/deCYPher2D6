@@ -54,17 +54,17 @@ def main():
     samplename = args.samplename
     output_dir = os.path.join(args.output, samplename)
 
-    # 创建输出文件夹
+    
     os.makedirs(f"{output_dir}/alignment", exist_ok=True)
     os.makedirs(f"{output_dir}/extract", exist_ok=True)
     os.makedirs(f"{output_dir}/result", exist_ok=True)
 
-    # 载入内部资源
+    
     ref = get_resource_path('CYP2D6.1.001.fa')
     haplo = get_resource_path('CYP2D6.haplotypes_core.fasta')
     refseq_gene_core = get_resource_path('RefSeqGeneCore')
 
-    # 载入 minimap2, k8-Linux, 和 paftools.js
+    
     minimap2_path = get_resource_path('minimap2/minimap2')
     k8_path = get_resource_path('k8-0.2.4/k8-Linux')
     paftools_path = get_resource_path('minimap2/misc/paftools.js')
