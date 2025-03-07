@@ -1,75 +1,99 @@
 import os
 import subprocess
 import argparse
-
-# 設定固定參數
-REF = "CYP2D6.1.001.fa"
-HAPLO = "CYP2D6.haplotypes_core.fasta"
-REFSEQ_GENE_CORE = "RefSeqGeneCore"
-
-# 從環境變量獲取 minimap2 和 k8 的路徑
-MINIMAP2_PATH = os.getenv("MINIMAP2_PATH", None)
-K8_PATH = os.getenv("K8_PATH", None)
-
-# 檢查工具是否存在
-if MINIMAP2_PATH is None or K8_PATH is None:
-    print("Error: MINIMAP2_PATH or K8_PATH environment variable is not set.")
-    print("Please make sure to set the environment variables or run the install_dependencies.sh script.")
-    exit(1)
+import pkg_resources
+from deCYP2D6 import extract_loci_from_paf, anotation, comparison
+def get_resource_path(resource_name):
+    """获取 deCYP2D6 包内的资源路径"""
+    return pkg_resources.resource_filename('deCYP2D6', resource_name)
 
 def run_command(command):
-    """執行 shell 指令並顯示輸出"""
+    """执行 shell 命令并显示输出"""
     print(f"Running: {command}")
     subprocess.run(command, shell=True, check=True)
+
+def extract_loci_from_paf_script(fasta_file, paf_file, output_dir):
+    """調用 extract_loci_from_paf.py 腳本來提取序列"""
+    command = [
+        "python", get_resource_path("extract_loci_from_paf.py"),  # 調用腳本
+        fasta_file,
+        paf_file,
+        output_dir
+    ]
+    subprocess.run(command, check=True)
+
+def run_anotation_script(reference_vcf, compare_dir, output_file):
+    """调用 annotation.py 脚本进行 VCF 文件比较"""
+    command = [
+        "python", get_resource_path("anotation.py"),  # 调用 annotation.py 脚本
+        reference_vcf,
+        compare_dir,
+        output_file
+    ]
+    subprocess.run(command, check=True)
+
+def run_comparison_script(txt_file, paf_file, output_file):
+    """调用 annotation.py 脚本进行 VCF 文件比较"""
+    command = [
+        "python", get_resource_path("comparison.py"),  # 调用 annotation.py 脚本
+        txt_file,
+        paf_file,
+        output_file
+    ]
+    subprocess.run(command, check=True)
 
 def main():
     parser = argparse.ArgumentParser(description="CYP2D6 Analysis Pipeline")
     parser.add_argument("--sample", required=True, help="Path to the sample FASTA file")
     parser.add_argument("--samplename", required=True, help="Sample name (e.g., HG01258P)")
     parser.add_argument("--output", required=True, help="Output directory")
-
+    
     args = parser.parse_args()
 
     sample = args.sample
     samplename = args.samplename
     output_dir = os.path.join(args.output, samplename)
 
-    # 建立輸出資料夾
+    # 创建输出文件夹
     os.makedirs(f"{output_dir}/alignment", exist_ok=True)
     os.makedirs(f"{output_dir}/extract", exist_ok=True)
     os.makedirs(f"{output_dir}/result", exist_ok=True)
 
-    # 設定環境變數
-    os.environ["PATH"] = f"{MINIMAP2_PATH}:{K8_PATH}:" + os.environ["PATH"]
+    # 载入内部资源
+    ref = get_resource_path('CYP2D6.1.001.fa')
+    haplo = get_resource_path('CYP2D6.haplotypes_core.fasta')
+    refseq_gene_core = get_resource_path('RefSeqGeneCore')
+
+    # 载入 minimap2, k8-Linux, 和 paftools.js
+    minimap2_path = get_resource_path('minimap2/minimap2')
+    k8_path = get_resource_path('k8-0.2.4/k8-Linux')
+    paftools_path = get_resource_path('minimap2/misc/paftools.js')
 
     ### Mapping ###
     paf_file = f"{output_dir}/alignment/mapping.paf"
-    run_command(f"minimap2 -cx splice:hq -G13k -y --cs -t32 -2 {sample} {REF} > {paf_file}")
+    run_command(f"{minimap2_path} -cx splice:hq -G13k -y --cs -t32 -2 {sample} {ref} > {paf_file}")
 
     ### Extract Reads ###
     extract_dir = f"{output_dir}/extract"
-    run_command(f"python3 extract_loci_from_paf.py {sample} {paf_file} {extract_dir}")
-    
+    extract_loci_from_paf_script(sample, paf_file, extract_dir)
     print("Extract reads: Finished")
-
-    ### Sorting ###
+    
+    ### Sorting Reads ###
     for fasta_file in os.listdir(extract_dir):
         if fasta_file.endswith(".fasta"):
             fasta_path = os.path.join(extract_dir, fasta_file)
             output_paf = os.path.join(extract_dir, fasta_file.replace(".fasta", ".paf"))
-            run_command(f"minimap2 -cx splice:hq -G13k -y --cs -t32 -2 {REF} {fasta_path} | sort -k10,10n > {output_paf}")
-
+            run_command(f"{minimap2_path} -cx splice:hq -G13k -y --cs -t32 -2 {ref} {fasta_path} | sort -k10,10n > {output_paf}")
     print("Sorting Reads: Finished")
-
+    
     ### Variant Calling ###
     for paf_file in os.listdir(extract_dir):
         if paf_file.endswith(".paf"):
             input_paf = os.path.join(extract_dir, paf_file)
             output_vcf = os.path.join(extract_dir, paf_file.replace(".paf", ".vcf"))
-            run_command(f"k8-Linux paftools.js call -L3 -l3 -f {REF} {input_paf} > {output_vcf}")
-
+            run_command(f"{k8_path} {paftools_path} call -L3 -l3 -f {ref} {input_paf} > {output_vcf}")
     print("Variant Calling: Finished")
-
+    
     ### Annotation ###
     result_dir = f"{output_dir}/result"
     counter = 1
@@ -77,19 +101,18 @@ def main():
         if fasta_file.endswith(".fasta"):
             fasta_path = os.path.join(extract_dir, fasta_file)
             output_paf = os.path.join(result_dir, f"comparison_{counter}.paf")
-            run_command(f"minimap2 -cx splice:hq -G13k -y --cs -t32 -2 {HAPLO} {fasta_path} > {output_paf}")
+            run_command(f"{minimap2_path} -cx splice:hq -G13k -y --cs -t32 -2 {haplo} {fasta_path} > {output_paf}")
             counter += 1
-
+    
     counter = 1
     for vcf_file in os.listdir(extract_dir):
         if vcf_file.endswith(".vcf"):
             vcf_path = os.path.join(extract_dir, vcf_file)
             output_txt = os.path.join(result_dir, f"comparison_{counter}.txt")
-            run_command(f"python3 anotation.py {vcf_path} {REFSEQ_GENE_CORE} {output_txt}")
+            run_anotation_script(vcf_path, refseq_gene_core, output_txt)
             counter += 1
-
     print("Annotating: Finished")
-
+    
     ### Comparison ###
     counter = 1
     stop_processing = False
@@ -97,12 +120,11 @@ def main():
     for comparison_file in sorted(os.listdir(result_dir)):
         if not comparison_file.startswith("comparison_") or not comparison_file.endswith(".txt"):
             continue
-
+        
         paf_file = os.path.join(result_dir, f"comparison_{counter}.paf")
         allele_output = os.path.join(result_dir, f"allele_{counter}.txt")
-
-        run_command(f"python3 comparison.py {os.path.join(result_dir, comparison_file)} {paf_file} {allele_output}")
-
+        run_comparison_script(os.path.join(result_dir, comparison_file), paf_file, allele_output)
+        
         with open(allele_output, "r") as f:
             if "*5" in f.read():
                 print(f"*5 found in {allele_output}. Stopping the process.")
@@ -110,18 +132,16 @@ def main():
                 for file in os.listdir(result_dir):
                     if file.startswith("allele_") and file.endswith(".txt"):
                         os.remove(os.path.join(result_dir, file))
-
                 with open(os.path.join(result_dir, "allele_1.txt"), "w") as output_file:
                     output_file.write("*5")
-                
                 stop_processing = True
                 break
-
+        
         counter += 1
-
+        
         if stop_processing:
             break
-
+    
     print("Job Finished")
 
 if __name__ == "__main__":
