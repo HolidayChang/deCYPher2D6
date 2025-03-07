@@ -1,6 +1,6 @@
 ＃＃The project is compatible with Python 3.6 and above.
 
-`git clone https://github.com/HolidayChang/deCYPher2D6.git` 
+```git clone https://github.com/HolidayChang/deCYPher2D6.git```
 
 `cd deCYPher2D6`
 
