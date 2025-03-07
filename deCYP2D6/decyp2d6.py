@@ -4,16 +4,16 @@ import argparse
 import pkg_resources
 from deCYP2D6 import extract_loci_from_paf, anotation, comparison
 def get_resource_path(resource_name):
-    """获取 deCYP2D6 包内的资源路径"""
+    
     return pkg_resources.resource_filename('deCYP2D6', resource_name)
 
 def run_command(command):
-    """执行 shell 命令并显示输出"""
+   
     print(f"Running: {command}")
     subprocess.run(command, shell=True, check=True)
 
 def extract_loci_from_paf_script(fasta_file, paf_file, output_dir):
-    """調用 extract_loci_from_paf.py 腳本來提取序列"""
+    
     command = [
         "python", get_resource_path("extract_loci_from_paf.py"),  # 調用腳本
         fasta_file,
@@ -23,7 +23,7 @@ def extract_loci_from_paf_script(fasta_file, paf_file, output_dir):
     subprocess.run(command, check=True)
 
 def run_anotation_script(reference_vcf, compare_dir, output_file):
-    """调用 annotation.py 脚本进行 VCF 文件比较"""
+    
     command = [
         "python", get_resource_path("anotation.py"),  # 调用 annotation.py 脚本
         reference_vcf,
@@ -33,7 +33,7 @@ def run_anotation_script(reference_vcf, compare_dir, output_file):
     subprocess.run(command, check=True)
 
 def run_comparison_script(txt_file, paf_file, output_file):
-    """调用 annotation.py 脚本进行 VCF 文件比较"""
+  
     command = [
         "python", get_resource_path("comparison.py"),  # 调用 annotation.py 脚本
         txt_file,
