@@ -4,7 +4,7 @@
 git clone https://github.com/HolidayChang/deCYPher2D6.git
 ```
 ```bash
-cd deCYPher2D6`
+cd deCYPher2D6
 ```
 ```bash
 pip install .
