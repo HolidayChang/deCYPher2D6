@@ -1,4 +1,4 @@
-＃＃The project is compatible with Python 3.6 and above.
+## The project is compatible with Python 3.6 and above.
 
 ```bash
 git clone https://github.com/HolidayChang/deCYPher2D6.git
