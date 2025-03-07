@@ -19,6 +19,6 @@ pip install biopython pandas argparse
 decyp2d6 --help
 ```
 ```bash
-decyp2d6 --smaple hifi_assembly_fa.gz --samplename sample_name_ --output output_path_
+decyp2d6 --smaple (hifi_assembly_fa.gz) --samplename (sample_name_) --output (output_path_)
 ```
 
