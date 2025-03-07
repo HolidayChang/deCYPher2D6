@@ -15,7 +15,7 @@ def run_command(command):
 def extract_loci_from_paf_script(fasta_file, paf_file, output_dir):
     
     command = [
-        "python", get_resource_path("extract_loci_from_paf.py"),  # 調用腳本
+        "python", get_resource_path("extract_loci_from_paf.py"),  
         fasta_file,
         paf_file,
         output_dir
@@ -25,7 +25,7 @@ def extract_loci_from_paf_script(fasta_file, paf_file, output_dir):
 def run_anotation_script(reference_vcf, compare_dir, output_file):
     
     command = [
-        "python", get_resource_path("anotation.py"),  # 调用 annotation.py 脚本
+        "python", get_resource_path("anotation.py"), 
         reference_vcf,
         compare_dir,
         output_file
@@ -35,7 +35,7 @@ def run_anotation_script(reference_vcf, compare_dir, output_file):
 def run_comparison_script(txt_file, paf_file, output_file):
   
     command = [
-        "python", get_resource_path("comparison.py"),  # 调用 annotation.py 脚本
+        "python", get_resource_path("comparison.py"),  
         txt_file,
         paf_file,
         output_file
