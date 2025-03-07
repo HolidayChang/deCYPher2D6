@@ -1,5 +1,5 @@
 ## The project is compatible with Python 3.6 and above.
-
+## Instructions for tool installation:
 ```bash
 git clone https://github.com/HolidayChang/deCYPher2D6.git
 ```
