@@ -2,9 +2,6 @@ import os
 import sys
 
 def load_variants(vcf_file):
-    """
-    从 VCF 文件中提取 (POS, REF, ALT) 作为变异标识的集合
-    """
     variants = set()
     line_count = 0
     with open(vcf_file) as f:
